@@ -1,0 +1,44 @@
+# https://taskfile.dev
+
+version: '3'
+
+dotenv: [".env"]
+
+tasks:
+
+    # MySQL docker management
+
+    # combined build & deploy of mysql container
+    upsql:
+      desc: Build and run a MYSQL docker container. MySQL Dockerfile pulls in the schema.sql as an init script. Running the kill script and then running upsql will re-run the setup schema to create the tables from scratch
+      cmds:
+        - task: buildsql
+        - task: runsql
+    buildsql:
+        desc: Build MYSQL image in Docker
+        cmds:
+        - docker build --tag 'go-mysql-sqlc' ./sqldb
+    runsql:
+        desc: Start MYSQL in Docker
+        cmds:
+        - docker run --name go-mysql-sqlc -e MYSQL_ROOT_PASSWORD="$SQL_PASS" -p 3306:3306 --detach go-mysql-sqlc
+    killsql:
+        desc: Stop and remove the MySQL container
+        cmds:
+        - docker stop go-mysql-sqlc && docker rm go-mysql-sqlc
+    sqlcli:
+        desc: CLI into MYSQL inside Docker
+        cmds:
+        - docker exec -it go-mysql-sqlc mysql -p
+
+    # Golang app management
+    run: 
+        desc: Run the Go rest api server
+        cmds:
+        - GOFLAGS=-mod=mod go run server.go 
+
+    # HTTP
+    ping:
+        desc: Ping the server locally to test response
+        cmds:
+        - curl "localhost:$PORT"/ping

@@ -1,0 +1,14 @@
+version: "2"
+sql:
+  - schema: "sqldb/schema.sql"
+    queries: "sqldb/query.sql"
+    engine: "mysql"
+    gen:
+      go:
+        package: "sqldb"
+        out: "sqldb"
+        json_tags_case_style: "camel"
+        emit_pointers_for_null_types: false
+
+
+
